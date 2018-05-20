@@ -294,17 +294,18 @@ def get_main_page():
         html.Div([
             html.Div([
                 dcc.Graph(id='main-graph'),
-            ], className='ten columns'),
+            ], className='seven columns'),
             html.Div([
                 dcc.Graph(
                     id='example-graph',
-
+                    style={'height': '300px', 'margin': 'auto'}
                 ),
 
                 dcc.RadioItems(
                     id='radio-features',
                     options=[{'label': i, 'value': i} for i in ['f1', 'f2', 'f3']],
-                    value='f1'
+                    value='f1',
+                    style={'margin': 'auto'}
                 ),
 
                 html.Div(id='output-a'),
@@ -327,7 +328,7 @@ def get_main_page():
                         10: '10'
                     },
                 )
-            ], className='two columns')
+            ], className='five columns', style={'margin-left': '0.5%', 'vertical-align': 'middle'})
         ], className='row'),
         html.Div([
             dcc.Graph(id='main-subgraph1', className='four columns'),
@@ -511,11 +512,15 @@ def get_advice_page():
                     value=ALL.columns[-6]
                 ),
                 dcc.Graph(
-                    id='graph-gapminder'
+                    id='graph-gapminder',
+                    style={'height': '450px'}
                 )
             ], className='six columns')
-        ], className='row')
-
+        ], className='row'),
+        html.Div([
+            html.Img(src='/static/img/Microphone-icon.png', height=80, width=80, style={'vertical-align': 'middle'}),
+            'Сергей Иванов увеличил расстояние ножей до 13 мм'
+        ], className='row', style={'font-size': 20})
     ]
 
 @app.callback(dash.dependencies.Output('page-content', 'children'),
