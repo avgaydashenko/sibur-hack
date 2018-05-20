@@ -131,11 +131,11 @@ def get_header():
 def get_menu():
     menu = html.Div([
 
-        dcc.Link('Profile   ', href='/profile', className="tab first four columns"),
+        dcc.Link('Профиль   ', href='/profile', className="tab first four columns"),
 
-        dcc.Link('Main   ', href='/main', className="tab four columns"),
+        dcc.Link('Главная   ', href='/main', className="tab four columns"),
 
-        dcc.Link('Advice   ', href='/advice', className="tab four columns"),
+        dcc.Link('Советчик   ', href='/advice', className="tab four columns"),
 
     ], className="row ")
     return menu
@@ -310,7 +310,7 @@ def get_main_page():
                 html.Div(id='output-a'),
 
                 html.Div(children='''
-                Please, evaluate prediction.
+                Пожалуйста, оцените качество предсказания
                 '''),
 
                 dcc.Slider(
@@ -441,7 +441,7 @@ def update_prediction(intervals):
             "autosize": False,
             "width": 270,
             "height": 280,
-            "title": "Prediction and time",
+            "title": "Предсказание уроня риска",
             "showlegend": False,
             "annotations": [{
                 "font": {
@@ -483,14 +483,18 @@ def update_radio_select(val):
 
 
 def get_advice_page():
+    tmp_df = FALLS.copy()
+    print(tmp_df.columns)
+    tmp_df.columns = np.hstack([['Дата'], tmp_df.columns[1:-1], ['Имя']])
+    cols =  tmp_df.columns[1:-1]
     return [
         html.Div([
             html.Div(children=[
                 dt.DataTable(
-                    rows=FALLS.to_dict('records'),
+                    rows=tmp_df.to_dict('records'),
 
                     # optional - sets the order of columns
-                    columns=sorted(FALLS.columns),
+                    columns=['Дата', 'Имя'] + list(sorted( tmp_df.columns[1:-1])),
 
                     row_selectable=True,
                     filterable=True,
