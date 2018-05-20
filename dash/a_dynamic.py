@@ -170,7 +170,6 @@ def update_figure(rows, selected_row_indices, selected_dropdown_value):
 
     for i, name in enumerate(selected_row_names):
         sub_dff = dff[dff.name == name]
-        print(sub_dff.columns)
         fig.append_trace({
             'x': sub_dff['date'],
             'y': sub_dff[selected_dropdown_value],
@@ -335,6 +334,7 @@ def get_main_page():
             dcc.Graph(id='main-subgraph2', className='four columns'),
             dcc.Graph(id='main-subgraph3', className='four columns'),
         ]),
+        html.P(id='placeholder'),
         dcc.Interval(id='main-update', interval=1000, n_intervals=0),
         dcc.Interval(id='radio-update', interval=5000, n_intervals=0),
 
@@ -470,8 +470,16 @@ def update_radio_features(intervals):
     for i in range(3):
         c = column_name[top_features.iloc[RADIO_ITER_NUM[0], i]]
         d.append({'label': c, 'value': c})
-    print(d)
     return d
+
+
+@app.callback(
+    Output('main-dropdown', 'value'),
+    [Input('radio-features', 'value')]
+)
+def update_radio_select(val):
+    return val
+
 
 
 def get_advice_page():
