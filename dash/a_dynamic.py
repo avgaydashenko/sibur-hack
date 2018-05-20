@@ -131,11 +131,11 @@ def get_header():
 def get_menu():
     menu = html.Div([
 
-        dcc.Link('Профиль   ', href='/profile', className="tab first four columns"),
+        dcc.Link('Личный кабинет   ', href='/profile', className="tab first four columns"),
 
         dcc.Link('Главная   ', href='/main', className="tab four columns"),
 
-        dcc.Link('Советчик   ', href='/advice', className="tab four columns"),
+        dcc.Link('Накопленный опыт   ', href='/advice', className="tab four columns"),
 
     ], className="row ")
     return menu
@@ -191,6 +191,7 @@ def update_figure(rows, selected_row_indices, selected_dropdown_value):
         't': 60,
         'b': 200
     }
+
     return fig
 
 
@@ -200,30 +201,37 @@ def get_profile_page():
         dcc.Dropdown(
             id='profile-dropdown',
             options=[{'label': c, 'value': c} for c in DF.columns if c != 'date'],
-            value=DF.columns.values[1]
+            value=DF.columns.values[1],
         ),
         html.Div([
             html.Div([
                 dcc.Graph(id='profile-graph'),
-            ], className='ten columns'),
+            ], className='nine columns', style={'height': '300px', 'margin': 'auto'}),
+            dcc.Interval(id='profile-update', interval=1000, n_intervals=0),
+
             html.Div([
                 html.Div([
-                    html.Div([html.Button('ОК', type='button', className='btn btn-primary btn-block')], className='btn-group-verical btn-block'),
-                    html.Div([html.Button('НЕ ОК', type='button', className='btn btn-primary btn-block')], className='btn-group-verical btn-block'),
-                    html.Div([html.Button('КЕК', type='button', className='btn btn-primary btn-block')], className='btn-group-verical  btn-block'),
-                ], className='btn-group btn-group-justified', style={'width': '100%'})
+                    html.Div(['Отчет'], style={'font-size': '30', 'text-align': 'center'}),
+                    html.Img(src='/static/img/report.jpg', height=400, width=300),
+                    html.Div([html.Button('Отправить', type='button', className='btn btn-primary btn-block')], className='btn-group-verical btn-block'),
+                    # html.Div([html.Button('НЕ ОК', type='button', className='btn btn-primary btn-block')], className='btn-group-verical btn-block'),
+                    # html.Div([html.Button('КЕК', type='button', className='btn btn-primary btn-block')], className='btn-group-verical  btn-block'),
+                ],  className='three columns')
             ], className='two columns')
         ], className='row'),
-        html.Div([], style={'clear': 'both'}),
         html.Div([
-            dcc.Graph(id='profile-subgraph1', className='four columns'),
-            dcc.Graph(id='profile-subgraph2', className='four columns'),
-            dcc.Graph(id='profile-subgraph3', className='four columns'),
-        ])
+            dcc.Graph(id='profile-subgraph1', className='three columns', style={'height': '250px', 'margin': '0.5%'}),
+            dcc.Graph(id='profile-subgraph2', className='three columns', style={'height': '250px', 'margin': '0.5%'}),
+            dcc.Graph(id='profile-subgraph3', className='three columns', style={'height': '250px', 'margin': '0.5%'}),
+        ]),
+
     ]
 
-def profile_plot_for_column(c):
-    dff = DF
+PROFILE_ITER_NUM = [0]
+
+def profile_plot_for_column(c, is_main=False):
+    dff = DF.iloc[PROFILE_ITER_NUM[0]: PROFILE_ITER_NUM[0] + 200]
+
     fig = plotly.tools.make_subplots(
         rows=1, cols=1,
         subplot_titles=([c]),
@@ -245,43 +253,48 @@ def profile_plot_for_column(c):
     }, 1, 1)
 
     fig['layout']['showlegend'] = False
-    fig['layout']['height'] = 800
+    # fig['layout']['height'] = 200
+    if not is_main:
+        fig['layout']['titlefont'] = {
+            'size': 4
+        }
     fig['layout']['margin'] = {
-        'l': 40,
-        'r': 10,
-        't': 60,
-        'b': 200
+        'l': 15,
+        'r': 15,
+        't': 20,
+        'b': 15
     }
+
     return fig
 
 @app.callback(
     Output('profile-graph', 'figure'),
-    [Input('profile-dropdown', 'value')]
+    [Input('profile-dropdown', 'value'), Input('profile-update', 'n_intervals')]
 )
-def update_profile_figure(selected_dropdown_value):
+def update_profile_figure(selected_dropdown_value, intervals):
     return profile_plot_for_column(selected_dropdown_value)
 
 @app.callback(
     Output('profile-subgraph1', 'figure'),
-    [Input('profile-dropdown', 'value')]
+    [Input('profile-dropdown', 'value'), Input('profile-update', 'n_intervals')]
 )
-def update_profile_figure1(selected_dropdown_value):
+def update_profile_figure1(selected_dropdown_value, intervals):
     return profile_plot_for_column(column_name[related_columns[column_name.index(selected_dropdown_value) - 1][0]])
 
 @app.callback(
     Output('profile-subgraph2', 'figure'),
-    [Input('profile-dropdown', 'value')]
+    [Input('profile-dropdown', 'value'), Input('profile-update', 'n_intervals')]
 )
-def update_profile_figure2(selected_dropdown_value):
+def update_profile_figure2(selected_dropdown_value, intervals):
     return profile_plot_for_column(column_name[related_columns[column_name.index(selected_dropdown_value) - 1][1]])
 
 @app.callback(
     Output('profile-subgraph3', 'figure'),
-    [Input('profile-dropdown', 'value')]
+    [Input('profile-dropdown', 'value'), Input('profile-update', 'n_intervals')]
 )
-def update_profile_figure3(selected_dropdown_value):
+def update_profile_figure3(selected_dropdown_value, intervals):
+    PROFILE_ITER_NUM[0] += 1
     return profile_plot_for_column(column_name[related_columns[column_name.index(selected_dropdown_value) - 1][2]])
-
 
 
 def get_main_page():
@@ -294,18 +307,18 @@ def get_main_page():
         html.Div([
             html.Div([
                 dcc.Graph(id='main-graph'),
-            ], className='seven columns'),
+            ], className='nine columns'),
             html.Div([
                 dcc.Graph(
                     id='example-graph',
                     style={'height': '300px', 'margin': 'auto'}
                 ),
-
+                'На эти параметры стоит ориентироваться больше, чем на остальные',
                 dcc.RadioItems(
                     id='radio-features',
                     options=[{'label': i, 'value': i} for i in ['f1', 'f2', 'f3']],
                     value='f1',
-                    style={'margin': 'auto'}
+                    #style={'margin': 'auto'}
                 ),
 
                 html.Div(id='output-a'),
@@ -328,12 +341,16 @@ def get_main_page():
                         10: '10'
                     },
                 )
-            ], className='five columns', style={'margin-left': '0.5%', 'vertical-align': 'middle'})
+            ], className='three columns', style={'margin-left': '0.5%', 'vertical-align': 'middle'})
         ], className='row'),
         html.Div([
-            dcc.Graph(id='main-subgraph1', className='four columns'),
-            dcc.Graph(id='main-subgraph2', className='four columns'),
-            dcc.Graph(id='main-subgraph3', className='four columns'),
+            dcc.Graph(id='main-subgraph1', className='three columns', style={'height': '250px', 'margin': '0.5%'}),
+            dcc.Graph(id='main-subgraph2', className='three columns', style={'height': '250px', 'margin': '0.5%'}),
+            dcc.Graph(id='main-subgraph3', className='three columns', style={'height': '250px', 'margin': '0.5%'})
+
+            # html.Img(src='/static/img/alisa.png', className='three columns', width=100, height=100, style={
+            #     'margin-left': '80'
+            # })
         ]),
         html.P(id='placeholder'),
         dcc.Interval(id='main-update', interval=1000, n_intervals=0),
@@ -344,7 +361,7 @@ def get_main_page():
 MAIN_ITER_NUM = [0]
 MAIN_COLS = [DF.columns.values[1] for i in range(4)]
 
-def main_plot_for_column(c):
+def main_plot_for_column(c, is_main=False):
     dff = DF.iloc[MAIN_ITER_NUM[0]: MAIN_ITER_NUM[0] + 200]
     fig = plotly.tools.make_subplots(
         rows=1, cols=1,
@@ -366,12 +383,16 @@ def main_plot_for_column(c):
     }, 1, 1)
 
     fig['layout']['showlegend'] = False
-    fig['layout']['height'] = 800
+    # fig['layout']['height'] = 200
+    if not is_main:
+        fig['layout']['titlefont'] = {
+            'size': 4
+        }
     fig['layout']['margin'] = {
-        'l': 40,
-        'r': 10,
-        't': 60,
-        'b': 200
+        'l': 15,
+        'r': 15,
+        't': 20,
+        'b': 15
     }
     return fig
 
@@ -382,7 +403,7 @@ def main_plot_for_column(c):
 def update_main_figure(selected_dropdown_value, intervals):
     if selected_dropdown_value is not None:
         MAIN_COLS[0] = selected_dropdown_value
-    return main_plot_for_column(MAIN_COLS[0])
+    return main_plot_for_column(MAIN_COLS[0], True)
 
 @app.callback(
     Output('main-subgraph1', 'figure'),
@@ -439,9 +460,10 @@ def update_prediction(intervals):
             "textinfo": "none"
         }],
         "layout": {
-            "autosize": False,
-            "width": 270,
+            # "autosize": False,
+            # "width": 270,
             "height": 280,
+
             "title": "Предсказание уроня риска",
             "showlegend": False,
             "annotations": [{
@@ -479,6 +501,8 @@ def update_radio_features(intervals):
     [Input('radio-features', 'value')]
 )
 def update_radio_select(val):
+    if val == 'f1':
+        return MAIN_COLS[0]
     return val
 
 
@@ -500,7 +524,7 @@ def get_advice_page():
                     row_selectable=True,
                     filterable=True,
                     sortable=True,
-                    selected_row_indices=[],
+                    selected_row_indices=[2],
                     id='datatable-gapminder'
                 ),
             ], className='six columns'),
@@ -509,7 +533,7 @@ def get_advice_page():
                 dcc.Dropdown(
                     id='my-dropdown',
                     options=options,
-                    value=ALL.columns[-6]
+                    value=ALL.columns[12]
                 ),
                 dcc.Graph(
                     id='graph-gapminder',
@@ -518,8 +542,8 @@ def get_advice_page():
             ], className='six columns')
         ], className='row'),
         html.Div([
-            html.Img(src='/static/img/Microphone-icon.png', height=80, width=80, style={'vertical-align': 'middle'}),
-            'Сергей Иванов увеличил расстояние ножей до 13 мм'
+            # html.Img(src='/static/img/Microphone-icon.png', height=80, width=80, style={'vertical-align': 'middle'}),
+            'В аналогичной ситуации Сергей Иванов увеличил расстояние ножей до 13 мм'
         ], className='row', style={'font-size': 20})
     ]
 
